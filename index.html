@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>داروجو — نسخهٔ آزمایشی</title>
+  <style>
+    :root{--bg:#f6f8fb;--primary:#2b7a78;--accent:#f08a5d;--card:#fff;--muted:#6b6b6b}
+    *{box-sizing:border-box;font-family: 'Segoe UI', Tahoma, sans-serif}
+    body{margin:0;background:linear-gradient(180deg,#f6f8fb 0%,#eef6f6 100%);color:#222}
+    .container{max-width:1100px;margin:30px auto;padding:20px}
+
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:54px;height:54px;border-radius:12px;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:20px}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted)}
+
+    .card{background:var(--card);border-radius:14px;padding:18px;box-shadow:0 6px 18px rgba(30,40,50,0.06)}
+
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
+
+    .home-actions{display:flex;flex-direction:column;gap:12px}
+    .role-btn{padding:14px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:transparent;cursor:pointer;text-align:right}
+    .role-btn strong{display:block}
+
+    .auth{display:flex;flex-direction:column;gap:10px}
+    .input{display:flex;flex-direction:column}
+    input,select{padding:10px;border-radius:8px;border:1px solid #e2e8f0}
+    .row{display:flex;gap:10px}
+    button.primary{background:var(--primary);color:#fff;padding:10px;border-radius:8px;border:0;cursor:pointer}
+    button.ghost{background:transparent;border:1px solid #ddd;padding:10px;border-radius:8px;cursor:pointer}
+
+    .small{font-size:13px;color:var(--muted)}
+    .pharm-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+    .pharm-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;border:1px solid #eef3f3}
+
+    /* patient area */
+    .patient-area{display:none;flex-direction:column;gap:12px}
+    .patient-area.active{display:flex}
+
+    .presc-form{display:flex;flex-direction:column;gap:10px}
+
+    /* pharmacy area */
+    .pharmacy-area{display:none;flex-direction:column;gap:12px}
+    .pharmacy-area.active{display:flex}
+    .presc-card{padding:12px;border-radius:8px;border:1px dashed #e3eef0;display:flex;justify-content:space-between;align-items:center}
+
+    .notif{position:fixed;left:18px;bottom:18px;background:#222;color:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.25)}
+
+    .center{display:flex;flex-direction:column;align-items:center;justify-content:center}
+
+    /* loading */
+    .loader-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:none;align-items:center;justify-content:center}
+    .loader-overlay.active{display:flex}
+    .loader{background:#fff;padding:24px;border-radius:12px;min-width:320px;text-align:center}
+    .countdown{font-weight:700;font-size:28px;margin-top:8px}
+
+    footer{margin-top:20px;color:var(--muted);font-size:13px}
+
+    @media(max-width:900px){.grid{grid-template-columns:1fr}
+      header{flex-direction:column;align-items:flex-start;gap:8px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">د</div>
+        <div>
+          <h1>داروجو</h1>
+          <p class="lead">پلتفرمِ سفارش و آماده‌سازی دارو برای بیمار و داروخانه</p>
+        </div>
+      </div>
+      <div class="small">آزمایشی — نمونهٔ فرانت‌اند</div>
+    </header>
+
+    <div class="grid">
+      <div class="card">
+        <h3>خانه</h3>
+        <div style="height:10px"></div>
+        <div class="home-actions">
+          <button class="role-btn" id="openPatient">ورود / ثبت‌نام بیمار <small class="small">برای ثبت نسخه و جستجوی دارو</small></button>
+          <button class="role-btn" id="openPharmacy">ورود / ثبت‌نام داروخانه <small class="small">برای دریافت نسخه و آماده‌سازی</small></button>
+          <div class="small">این نسخهٔ دمویی همهٔ داده‌ها را در مرورگر ذخیره می‌کند.</div>
+        </div>
+
+        <div style="margin-top:18px">
+          <div class="patient-area card" id="patientArea">
+            <h4>بیمار — ورود / ثبت‌نام</h4>
+            <div class="auth">
+              <div id="patientAuthTabs">
+                <button class="ghost" id="pLoginBtn">ورود</button>
+                <button class="ghost" id="pSignupBtn">ثبت‌نام</button>
+              </div>
+
+              <div id="pLoginForm" style="display:none">
+                <div class="input"><label>شماره تلفن</label><input id="pLoginPhone" placeholder="09xxxxxxxx" /></div>
+                <div class="input"><label>رمز عبور</label><input id="pLoginPass" type="password" /></div>
+                <div class="row"><button class="primary" id="pDoLogin">ورود</button><button class="ghost" id="pBack">بازگشت</button></div>
+              </div>
+
+              <div id="pSignupForm" style="display:none">
+                <div class="input"><label>نام و نام خانوادگی</label><input id="pName" /></div>
+                <div class="input"><label>شماره تلفن</label><input id="pPhone" placeholder="09xxxxxxxx" /></div>
+                <div class="input"><label>شهر</label><input id="pCity" /></div>
+                <div class="input"><label>رمز عبور</label><input id="pPass" type="password" /></div>
+                <div class="row"><button class="primary" id="pDoSignup">ثبت‌نام</button><button class="ghost" id="pBack2">بازگشت</button></div>
+              </div>
+
+            </div>
+
+            <div id="patientDashboard" style="display:none">
+              <h4>خوش آمدید، <span id="pDisplayName"></span></h4>
+              <div class="presc-form">
+                <label>کد نسخه</label>
+                <input id="prescCode" placeholder="مثال: ABC-123" />
+                <label>شماره شناسه</label>
+                <input id="prescId" placeholder="مثال: 987654321" />
+                <label>نوع بیمه</label>
+                <select id="insType">
+                  <option>تأمین اجتماعی</option>
+                  <option>خدمات درمانی</option>
+                  <option>نیروهای مسلح</option>
+                  <option>جانبازان</option>
+                </select>
+                <div class="row"><button class="primary" id="searchPresc">جستجو</button><button class="ghost" id="pLogout">خروج</button></div>
+              </div>
+
+              <div id="searchResults"></div>
+              <div style="height:12px"></div>
+              <h5>نسخه‌های من</h5>
+              <div id="myPrescriptions"></div>
+            </div>
+          </div>
+
+          <div class="pharmacy-area card" id="pharmacyArea">
+            <h4>داروخانه — ورود / ثبت‌نام</h4>
+            <div class="auth">
+              <div id="pharmAuthTabs">
+                <button class="ghost" id="phLoginBtn">ورود</button>
+                <button class="ghost" id="phSignupBtn">ثبت‌نام</button>
+              </div>
+
+              <div id="phLoginForm" style="display:none">
+                <div class="input"><label>نام کاربری</label><input id="phLoginUser" /></div>
+                <div class="input"><label>رمز عبور</label><input id="phLoginPass" type="password" /></div>
+                <div class="row"><button class="primary" id="phDoLogin">ورود</button><button class="ghost" id="phBack">بازگشت</button></div>
+              </div>
+
+              <div id="phSignupForm" style="display:none">
+                <div class="input"><label>نام داروخانه</label><input id="phName" /></div>
+                <div class="input"><label>شهر</label><input id="phCity" /></div>
+                <div class="input"><label>شماره تلفن</label><input id="phPhone" /></div>
+                <div class="input"><label>نام مدیر</label><input id="phManager" /></div>
+                <div class="input"><label>نام کاربری</label><input id="phUser" /></div>
+                <div class="input"><label>رمز عبور</label><input id="phPass" type="password" /></div>
+                <div class="row"><button class="primary" id="phDoSignup">ثبت‌نام</button><button class="ghost" id="phBack2">بازگشت</button></div>
+              </div>
+
+              <div id="pharmacyDashboard" style="display:none">
+                <h4>داروخانه: <span id="phDisplayName"></span></h4>
+                <div>
+                  <h5>نسخه‌های دریافتی</h5>
+                  <div id="incomingPrescriptions"></div>
+                </div>
+                <div style="height:10px"></div>
+                <div>
+                  <h5>فهرست داروهای موجود (برای نمونه)</h5>
+                  <div id="inventory"></div>
+                </div>
+                <div style="height:10px"></div>
+                <button class="ghost" id="phLogout">خروج</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>راهنما</h3>
+        <p class="small">فلؤ کاری ساده:</p>
+        <ol>
+          <li>بیمار ثبت‌نام می‌کند و کد نسخه را ارسال می‌کند.</li>
+          <li>داروخانه‌ها نسخه را می‌بینند و در صورت موجودی قبول می‌کنند.</li>
+          <li>بیمار پرداخت می‌کند و صفحهٔ "دارو آماده‌سازی" با تایمر می‌بیند.</li>
+        </ol>
+
+        <div style="margin-top:12px">
+          <h4>چند یادداشت</h4>
+          <ul>
+            <li class="small">این یک نمونهٔ فرانت‌اند است؛ برای استفادهٔ واقعی نیاز به بک‌اند، احراز هویت امن و قوانین حریم خصوصی دارید.</li>
+            <li class="small">داده‌ها در localStorage مرورگر ذخیره می‌شوند — برای تست مناسب است.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <footer>نسخهٔ آزمایشی — ساخته شده برای نمونهٔ اولیه</footer>
+  </div>
+
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader card center">
+      <div id="loaderTitle">در حال آماده‌سازی نسخه...</div>
+      <div class="countdown" id="loaderTimer">00:00</div>
+      <div style="height:10px"></div>
+      <button class="primary" id="closeLoader">بستن</button>
+    </div>
+  </div>
+
+  <div id="notif" class="notif" style="display:none"></div>
+
+  <script>
+    // Simple front-end simulation for Daroojo
+    // Data stored in localStorage: patients, pharmacies, prescriptions
+    const ls = {
+      get(k){try{return JSON.parse(localStorage.getItem(k) || 'null')}catch(e){return null}},
+      set(k,v){localStorage.setItem(k,JSON.stringify(v))},
+      rm(k){localStorage.removeItem(k)}
+    }
+
+    // initialize
+    if(!ls.get('pharmacies')){
+      const demoPh = [
+        {id:'ph1',username:'ph1',pass:'1234',name:'داروخانه مرکزی',city:'تهران',phone:'021111',manager:'علی',inventory:['ABC-123','XYZ-9']},
+        {id:'ph2',username:'ph2',pass:'1234',name:'داروخانه نیاوران',city:'تهران',phone:'021222',manager:'سارا',inventory:['ABC-123']}
+      ];
+      ls.set('pharmacies',demoPh);
+    }
+    if(!ls.get('patients')) ls.set('patients',[])
+    if(!ls.get('prescriptions')) ls.set('prescriptions',[])
+
+    // helpers
+    function el(q){return document.querySelector(q)}
+    function showNotif(msg, timeout=3500){const n=el('#notif');n.textContent=msg;n.style.display='block';setTimeout(()=>n.style.display='none',timeout)}
+
+    // routing: open panels
+    el('#openPatient').onclick=()=>{el('#patientArea').classList.add('active');el('#pharmacyArea').classList.remove('active')}
+    el('#openPharmacy').onclick=()=>{el('#pharmacyArea').classList.add('active');el('#patientArea').classList.remove('active')}
+
+    // patient auth
+    el('#pLoginBtn').onclick=()=>{el('#pLoginForm').style.display='block';el('#pSignupForm').style.display='none'}
+    el('#pSignupBtn').onclick=()=>{el('#pSignupForm').style.display='block';el('#pLoginForm').style.display='none'}
+    el('#pBack').onclick=()=>{el('#pLoginForm').style.display='none'}
+    el('#pBack2').onclick=()=>{el('#pSignupForm').style.display='none'}
+
+    el('#pDoSignup').onclick=()=>{
+      const name=el('#pName').value.trim();const phone=el('#pPhone').value.trim();const city=el('#pCity').value.trim();const pass=el('#pPass').value;
+      if(!name||!phone||!pass){showNotif('لطفاً همهٔ فیلدها را پر کنید');return}
+      const patients=ls.get('patients')||[];
+      if(patients.find(p=>p.phone===phone)){showNotif('این شماره قبلاً ثبت شده');return}
+      const id='p'+Date.now();patients.push({id,name,phone,city,pass});ls.set('patients',patients);
+      showNotif('ثبت‌نام موفق! اکنون وارد شوید');el('#pSignupForm').style.display='none';el('#pLoginForm').style.display='block'
+    }
+
+    el('#pDoLogin').onclick=()=>{
+      const phone=el('#pLoginPhone').value.trim();const pass=el('#pLoginPass').value;
+      const patients=ls.get('patients')||[];const user=patients.find(p=>p.phone===phone && p.pass===pass);
+      if(!user){showNotif('ناموفق: شماره یا رمز اشتباه');return}
+      // login
+      sessionStorage.setItem('currentPatient',JSON.stringify(user));
+      renderPatientDashboard();
+      showNotif('ورود موفق');
+    }
+
+    function renderPatientDashboard(){
+      const u=JSON.parse(sessionStorage.getItem('currentPatient')||'null');
+      if(!u) return;
+      el('#pDisplayName').textContent = u.name;
+      el('#patientDashboard').style.display='block';
+      el('#pLoginForm').style.display='none';el('#pSignupForm').style.display='none';
+      renderMyPrescriptions();
+    }
+
+    el('#pLogout').onclick=()=>{sessionStorage.removeItem('currentPatient');el('#patientDashboard').style.display='none';showNotif('خروج انجام شد')}
+
+    // create prescription and search
+    el('#searchPresc').onclick=()=>{
+      const code=el('#prescCode').value.trim();const pid=el('#prescId').value.trim();const ins=el('#insType').value;
+      const u=JSON.parse(sessionStorage.getItem('currentPatient')||'null');
+      if(!u){showNotif('ابتدا وارد شوید');return}
+      if(!code||!pid){showNotif('کد و شناسه لازم است');return}
+      const prescriptions=ls.get('prescriptions')||[];
+      const pres={id:'pr'+Date.now(),code,patientId:u.id,patientName:u.name,patientPhone:u.phone,patientCity:u.city,insurance:ins,status:'pending',created:Date.now(),matchedPharm:null,readyAt:null,payment:false}
+      prescriptions.push(pres);ls.set('prescriptions',prescriptions);
+      showNotif('نسخه ارسال شد — در انتظار پذیرش داروخانه');
+      renderSearchResults(pres);
+      notifyPharmacies();
+      renderMyPrescriptions();
+    }
+
+    function renderSearchResults(pres){
+      const pharmList=ls.get('pharmacies')||[];
+      const container=el('#searchResults');container.innerHTML='';
+      const matched = pharmList.filter(p=>p.inventory.includes(pres.code));
+      if(matched.length===0){container.innerHTML='<div class="small">فعلاً هیچ داروخانه‌ای نسخهٔ شما را ندارد.</div>';return}
+      const wrap=document.createElement('div');wrap.className='pharm-list';
+      matched.forEach(ph=>{
+        const item=document.createElement('div');item.className='pharm-item';
+        item.innerHTML = `<div>${ph.name} — ${ph.city}<div class="small">${ph.phone}</div></div><div><button class="primary" data-phid="${ph.id}">انتخاب و پرداخت</button></div>`;
+        wrap.appendChild(item);
+      })
+      container.appendChild(wrap);
+      // attach payment handlers
+      wrap.querySelectorAll('button').forEach(btn=>btn.onclick=(e)=>{
+        const phId=btn.getAttribute('data-phid');openPaymentModal(pres.id,phId);
+      })
+    }
+
+    function openPaymentModal(presId,phId){
+      const presList=ls.get('prescriptions')||[];const pres=presList.find(p=>p.id===presId);
+      if(!pres){showNotif('نسخه یافت نشد');return}
+      // mark that this pharmacy accepted
+      pres.matchedPharm=phId;pres.status='accepted_waiting_payment';ls.set('prescriptions',presList);
+      showNotif('داروخانه انتخاب شد — برای پرداخت وارد شوید');
+      // quick-pay simulation
+      setTimeout(()=>{
+        if(confirm('پرداخت را شبیه‌سازی کنیم؟ (OK = پرداخت موفق)')){
+          pres.payment=true;pres.status='paid';
+          // set ready time (e.g., 2 minutes from now)
+          const readyInSec = 120; pres.readyAt = Date.now() + readyInSec*1000;ls.set('prescriptions',presList);
+          showNotif('پرداخت موفق — دارو در حال آماده‌سازی');
+          // show loader with timer
+          showLoaderUntil(pres.readyAt);
+          notifyPatient(pres.id,'پرداخت انجام شد. داروخانه در حال آماده‌سازی است');
+          notifyPharmacyOfPayment(pres.matchedPharm,pres.id);
+          renderMyPrescriptions();
+        } else { showNotif('پرداخت لغو شد'); }
+      },200)
+    }
+
+    // loader
+    function showLoaderUntil(timestamp){
+      const overlay=el('#loaderOverlay');overlay.classList.add('active');
+      const timer=el('#loaderTimer');
+      const title=el('#loaderTitle');
+      function tick(){
+        const rem = Math.max(0,Math.floor((timestamp-Date.now())/1000));
+        const mm = String(Math.floor(rem/60)).padStart(2,'0');
+        const ss = String(rem%60).padStart(2,'0');
+        timer.textContent = mm+':'+ss;
+        if(rem<=0){clearInterval(iv);title.textContent='نسخه آماده است؛ لطفاً به داروخانه مراجعه کنید.'}
+      }
+      tick();
+      const iv=setInterval(tick,1000);
+      el('#closeLoader').onclick=()=>{overlay.classList.remove('active');clearInterval(iv)}
+    }
+
+    // patient prescriptions list
+    function renderMyPrescriptions(){
+      const u=JSON.parse(sessionStorage.getItem('currentPatient')||'null');
+      const c=el('#myPrescriptions');c.innerHTML='';if(!u) return;
+      const presList=(ls.get('prescriptions')||[]).filter(p=>p.patientId===u.id).sort((a,b)=>b.created-a.created);
+      presList.forEach(p=>{
+        const box=document.createElement('div');box.className='presc-card';
+        const pharmName = p.matchedPharm? ( (ls.get('pharmacies')||[]).find(x=>x.id===p.matchedPharm)?.name || 'داروخانه') : 'هنوز انتخاب نشده';
+        const statusText = p.status + (p.payment? ' (پرداخت شده)':'');
+        box.innerHTML = `<div style="text-align:right">کد: <strong>${p.code}</strong><div class="small">بیمه: ${p.insurance}</div><div class="small">داروخانه: ${pharmName}</div></div><div style="text-align:left"><div class="small">${statusText}</div></div>`;
+        c.appendChild(box);
+      })
+    }
+
+    // notify pharmacies when new prescription created
+    function notifyPharmacies(){
+      // in real app we'd push to backend; here we just leave prescriptions in storage for pharmacies to poll
+      showNotif('داروخانه‌ها با نسخهٔ جدید مطلع شدند');
+    }
+
+    // pharmacy side
+    el('#phLoginBtn').onclick=()=>{el('#phLoginForm').style.display='block';el('#phSignupForm').style.display='none'}
+    el('#phSignupBtn').onclick=()=>{el('#phSignupForm').style.display='block';el('#phLoginForm').style.display='none'}
+    el('#phBack').onclick=()=>{el('#phLoginForm').style.display='none'}
+    el('#phBack2').onclick=()=>{el('#phSignupForm').style.display='none'}
+
+    el('#phDoSignup').onclick=()=>{
+      const name=el('#phName').value.trim();const city=el('#phCity').value.trim();const phone=el('#phPhone').value.trim();const manager=el('#phManager').value.trim();const user=el('#phUser').value.trim();const pass=el('#phPass').value;
+      if(!name||!phone||!user||!pass){showNotif('همهٔ فیلدها لازم است');return}
+      const phs=ls.get('pharmacies')||[];if(phs.find(p=>p.username===user)){showNotif('نام کاربری تکراری است');return}
+      const id='ph'+Date.now();phs.push({id,username:user,pass,name,city,phone,manager,inventory:[]});ls.set('pharmacies',phs);
+      showNotif('ثبت داروخانه موفق — اکنون وارد شوید');el('#phSignupForm').style.display='none';el('#phLoginForm').style.display='block'
+    }
+
+    el('#phDoLogin').onclick=()=>{
+      const user=el('#phLoginUser').value.trim();const pass=el('#phLoginPass').value;
+      const phs=ls.get('pharmacies')||[];const ph=phs.find(p=>p.username===user && p.pass===pass);
+      if(!ph){showNotif('نام کاربری یا رمز اشتباه');return}
+      sessionStorage.setItem('currentPharmacy',JSON.stringify(ph));renderPharmacyDashboard();showNotif('ورود موفق');
+    }
+
+    function renderPharmacyDashboard(){
+      const ph=JSON.parse(sessionStorage.getItem('currentPharmacy')||'null');if(!ph) return;
+      el('#phDisplayName').textContent = ph.name;
+      el('#pharmacyDashboard').style.display='block';el('#phLoginForm').style.display='none';el('#phSignupForm').style.display='none';
+      renderIncomingPrescriptions();renderInventory(ph);
+    }
+
+    function renderInventory(ph){
+      const wrap=el('#inventory');wrap.innerHTML='';
+      const inv=(ls.get('pharmacies')||[]).find(p=>p.id===ph.id)?.inventory||[];
+      const div=document.createElement('div');div.className='pharm-list';
+      inv.forEach(code=>{const item=document.createElement('div');item.className='pharm-item';item.innerHTML=`<div>${code}</div><div><button class="ghost" data-code="${code}">حذف</button></div>`;div.appendChild(item)});
+      const addDiv=document.createElement('div');addDiv.className='row';addDiv.style.marginTop='8px';addDiv.innerHTML=`<input id="newCode" placeholder="کد دارو برای اضافه" /><button class="primary" id="addCode">افزودن</button>`;
+      wrap.appendChild(div);wrap.appendChild(addDiv);
+      const btns=wrap.querySelectorAll('button[data-code]');btns.forEach(b=>b.onclick=()=>{const code=b.getAttribute('data-code');removeInventoryItem(ph.id,code);renderPharmacyDashboard()});
+      el('#addCode').onclick=()=>{const code=el('#newCode').value.trim();if(!code){showNotif('کد لازم است');return}addInventoryItem(ph.id,code);el('#newCode').value='';renderPharmacyDashboard();showNotif('کد اضافه شد')}
+    }
+
+    function addInventoryItem(phId,code){const phs=ls.get('pharmacies')||[];const ph=phs.find(p=>p.id===phId);if(!ph) return;ph.inventory.push(code);ls.set('pharmacies',phs)}
+    function removeInventoryItem(phId,code){const phs=ls.get('pharmacies')||[];const ph=phs.find(p=>p.id===phId);if(!ph) return;ph.inventory=ph.inventory.filter(c=>c!==code);ls.set('pharmacies',phs)}
+
+    function renderIncomingPrescriptions(){
+      const ph=JSON.parse(sessionStorage.getItem('currentPharmacy')||'null');if(!ph) return;
+      const incoming= (ls.get('prescriptions')||[]).filter(p=>p.status==='pending' || (p.matchedPharm===ph.id && p.status!=='closed'));
+      const container=el('#incomingPrescriptions');container.innerHTML='';
+      if(incoming.length===0){container.innerHTML='<div class="small">نسخهٔ جدیدی وجود ندارد.</div>';return}
+      incoming.forEach(p=>{
+        const box=document.createElement('div');box.className='presc-card';
+        box.innerHTML = `<div style="text-align:right"><strong>کد: ${p.code}</strong><div class="small">بیمار: ${p.patientName} — ${p.patientPhone}</div><div class="small">بیمه: ${p.insurance}</div></div>
+        <div style="text-align:left">${renderPresButtons(p,ph)}</div>`;
+        container.appendChild(box);
+      })
+      // attach handlers
+      container.querySelectorAll('button.accept').forEach(b=>b.onclick=(e)=>{const pid=b.dataset.pid;acceptPrescription(ph.id,pid)});
+      container.querySelectorAll('button.markready').forEach(b=>b.onclick=(e)=>{const pid=b.dataset.pid;markPrescriptionReady(ph.id,pid)});
+    }
+
+    function renderPresButtons(p,ph){
+      if(p.status==='pending'){
+        // show accept if inventory has code
+        const has = ph.inventory.includes(p.code);
+        if(has) return `<button class="primary accept" data-pid="${p.id}">پذیرش و پیام به بیمار</button>`;
+        return `<div class="small">این نسخه در فهرست شما موجود نیست.</div>`;
+      }
+      if(p.status==='accepted_waiting_payment') return `<div class="small">در انتظار پرداخت بیمار</div>`;
+      if(p.status==='paid') return `<button class="primary markready" data-pid="${p.id}">علامت‌گذاری: آماده‌سازی</button>`;
+      if(p.status==='ready') return `<div class="small">آماده برای تحویل</div>`;
+      return '';
+    }
+
+    function acceptPrescription(phId,presId){
+      const prescriptions=ls.get('prescriptions')||[];const pres=prescriptions.find(p=>p.id===presId);if(!pres) return;pres.status='accepted';pres.matchedPharm=phId;ls.set('prescriptions',prescriptions);showNotif('نسخه پذیرش شد و به بیمار اطلاع داده شد');notifyPatient(presId,'داروخانه نسخهٔ شما را پذیرفت');renderIncomingPrescriptions();
+    }
+
+    function notifyPatient(presId,msg){
+      // simple local notify: if patient is logged in and owns the prescription, show
+      const curP=JSON.parse(sessionStorage.getItem('currentPatient')||'null');
+      if(curP){
+        const pres = (ls.get('prescriptions')||[]).find(p=>p.id===presId);
+        if(pres && pres.patientId===curP.id){showNotif(msg)}
+      }
+    }
+
+    function notifyPharmacyOfPayment(phId,presId){
+      const curPh=JSON.parse(sessionStorage.getItem('currentPharmacy')||'null');
+      if(curPh && curPh.id===phId){showNotif('یک نسخه پرداخت شده برای شما وجود دارد')}
+    }
+
+    function markPrescriptionReady(phId,presId){
+      const prescriptions=ls.get('prescriptions')||[];const pres=prescriptions.find(p=>p.id===presId);if(!pres) return;pres.status='ready';pres.readyAt=Date.now();ls.set('prescriptions',prescriptions);showNotif('نسخه علامت‌گذاری شد: آماده');notifyPatient(presId,'نسخه شما آماده است — لطفاً به داروخانه مراجعه کنید');renderIncomingPrescriptions();renderMyPrescriptions();
+    }
+
+    el('#phLogout').onclick=()=>{sessionStorage.removeItem('currentPharmacy');el('#pharmacyDashboard').style.display='none';showNotif('خروج انجام شد')}
+
+    // on load, if any session present, render
+    if(sessionStorage.getItem('currentPatient')) renderPatientDashboard();
+    if(sessionStorage.getItem('currentPharmacy')) renderPharmacyDashboard();
+
+    // small utility to let pharmacy poll for new prescriptions every 8s while logged in
+    setInterval(()=>{if(sessionStorage.getItem('currentPharmacy')) renderIncomingPrescriptions();if(sessionStorage.getItem('currentPatient')) renderMyPrescriptions()},8000)
+
+  </script>
+</body>
+</html>
