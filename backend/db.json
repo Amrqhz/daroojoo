@@ -1,8 +1,65 @@
 {
   "patients": [
+    {
+      "id": "1762869259683",
+      "name": "امیرحسین قلی زاده ",
+      "phone": "09910420324",
+      "city": "بابل",
+      "password": "0324"
+    }
   ],
   "pharmacies": [
+    {
+      "id": "1763552857569",
+      "name": "داوودی",
+      "city": "بابل",
+      "phone": "000",
+      "manager": "امیر",
+      "username": "داوودی",
+      "password": "0324",
+      "inventory": []
+    }
   ],
   "prescriptions": [
+    {
+      "id": "1762869292058",
+      "code": "2536",
+      "idNumber": "695619995",
+      "insurance": "تأمین اجتماعی",
+      "patientId": "1762869259683",
+      "status": "paid",
+      "matchedPharmacy": "1763552857569",
+      "payment": true
+    },
+    {
+      "id": "1762869575576",
+      "code": "03255",
+      "idNumber": "626665",
+      "insurance": "تأمین اجتماعی",
+      "patientId": "1762869259683",
+      "status": "accepted",
+      "matchedPharmacy": "1763552857569",
+      "payment": false
+    },
+    {
+      "id": "1762869641566",
+      "code": "0324",
+      "idNumber": "2626",
+      "insurance": "تأمین اجتماعی",
+      "patientId": "1762869259683",
+      "status": "pending",
+      "matchedPharmacy": null,
+      "payment": false
+    },
+    {
+      "id": "1762869880042",
+      "code": "lkklklj",
+      "idNumber": "2622",
+      "insurance": "تأمین اجتماعی",
+      "patientId": "1762869259683",
+      "status": "paid",
+      "matchedPharmacy": "1763552857569",
+      "payment": true
+    }
   ]
 }
